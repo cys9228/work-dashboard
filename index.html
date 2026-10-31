@@ -1,6 +1,37 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>
+/* v15 : 카카오톡 등 앱 안 브라우저 → 크롬으로 자동 열기 */
+(function(){
+  var ua=navigator.userAgent||'';
+  var kakao=/KAKAOTALK/i.test(ua);
+  var inapp=kakao||/NAVER\(inapp|Line\/|Instagram|FBAN|FBAV|DaumApps|BAND\/|everytimeApp|; wv\)/i.test(ua);
+  if(!inapp||!/^https?:$/.test(location.protocol))return;
+  var url=location.href;window.__inapp={url:url,android:/Android/i.test(ua),kakao:kakao};
+  window.__goChrome=function(){
+    if(/Android/i.test(ua)){location.href='intent://'+url.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';}
+    else if(kakao){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url);}
+    else if(/Line\//i.test(ua)){location.href=url+(url.indexOf('?')<0?'?':'&')+'openExternalBrowser=1';}
+  };
+  window.__goChrome();
+  document.addEventListener('DOMContentLoaded',function(){
+    var d=document.createElement('div');d.id='inappBox';
+    d.innerHTML='<div style="max-width:360px;width:100%;background:#0f1a2b;border:1px solid #facc15;border-radius:12px;padding:1.3rem;text-align:center;color:#e5edf7;font-family:sans-serif">'+
+      '<div style="font-size:2.2rem">🌐</div><div style="font-size:1.15rem;font-weight:800;margin:.4rem 0;color:#fde68a">크롬에서 열어 주세요</div>'+
+      '<div style="font-size:.9rem;line-height:1.6;color:#cbd5e1">카카오톡 안에서는 음성입력·로그인 유지가 제대로 되지 않습니다.<br>아래 버튼을 누르면 크롬으로 열립니다.</div>'+
+      '<button id="ibGo" style="margin-top:1rem;width:100%;padding:.8rem;border:0;border-radius:8px;background:#facc15;color:#1f1300;font-size:1.05rem;font-weight:800">크롬으로 열기</button>'+
+      '<button id="ibCopy" style="margin-top:.5rem;width:100%;padding:.6rem;border:1px solid #2c3f5e;border-radius:8px;background:#16243a;color:#e5edf7;font-size:.9rem">링크 복사 (크롬 주소창에 붙여넣기)</button>'+
+      '<button id="ibStay" style="margin-top:.5rem;width:100%;padding:.5rem;border:0;background:none;color:#8ea3bf;font-size:.8rem;text-decoration:underline">그냥 여기서 쓰기</button></div>';
+    d.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(5,10,20,.97);display:flex;align-items:center;justify-content:center;padding:1rem';
+    document.body.appendChild(d);
+    document.getElementById('ibGo').onclick=function(){window.__goChrome()};
+    document.getElementById('ibCopy').onclick=function(){var t=window.__inapp.url;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){alert('복사했습니다. 크롬을 열고 주소창에 붙여넣으세요.')},function(){prompt('아래 링크를 길게 눌러 복사하세요',t)})};
+    document.getElementById('ibStay').onclick=function(){d.remove()};
+  });
+})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>작업 대시보드 · 어제/오늘/명일</title>
@@ -1420,7 +1451,7 @@ async function openSend(){
 function sendRefresh(){
   const c=sdSite.value,nm=siteLabel(c),url=shareUrl(c);
   sdName.textContent='🏗 '+nm;sdCode.textContent='현장 코드 '+c;
-  sdMsg.value=`[${nm}] 작업 대시보드 안내\n\n아래 링크를 눌러 회원가입해 주세요.\n본사 승인 후 어제·오늘·명일 작업현황을 입력·확인할 수 있습니다.\n(휴대폰: 열린 뒤 메뉴 ⋮ → 홈 화면에 추가)\n\n${url}`;
+  sdMsg.value=`[${nm}] 작업 대시보드 안내\n\n아래 링크를 눌러 회원가입해 주세요.\n본사 승인 후 어제·오늘·명일 작업현황을 입력·확인할 수 있습니다.\n(카톡에서 누르면 크롬으로 열립니다 · 크롬 메뉴 ⋮ → 홈 화면에 추가)\n\n${url}`;
   drawQr(url);
 }
 async function drawQr(url){
